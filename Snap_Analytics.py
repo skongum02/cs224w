@@ -1,5 +1,7 @@
 import Data_Scraper
 import snap
+import matplotlib.pyplot as plt
+import copy
 
 ### READ ME ###
 #--------------------------------#
@@ -21,13 +23,21 @@ import snap
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+def measure_comment_lengths():
+	comment_length_count = {}
+
+	for comment in Data_Scraper.all_comments:
+		content = comment.content
+		print content
+
 def main():
 	Data_Scraper.load_data()
+	measure_comment_lengths()
 	
-	mapping = snap.TStrIntSH()
+	# mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
-	numberOfThreads(mapping)
+	# numberOfThreads(mapping)
 
 	print G.GetNodes()
 	print G.GetEdges()
@@ -35,7 +45,7 @@ def main():
 def numberOfThreads(mapping):
 	rootId = mapping.GetKeyId("root")
 	root = G.GetNI(rootId)
-	print("The number of threads: {0}".format(root.GetDeg()))
+	# print("The number of threads: {0}".format(root.GetDeg()))
 	
 	
 
