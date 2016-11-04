@@ -1,3 +1,5 @@
 politics.tsv
 .DS_Store
 *.pyc
+_snap.so
+snap.py
