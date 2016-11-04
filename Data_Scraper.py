@@ -77,8 +77,8 @@ def load_data():
 		comment_object["content"] = arr[9]
 
 
-		if comment_object["comment_id"] == '2nsjqy':
-			print comment_object
+		# if comment_object["comment_id"] == '2nsjqy':
+		# 	print comment_object
 		if comment_object["parent_comment_id"] == comment_object["thread_id"]:
 			# This is a root node for a comment tree
 			root_comments.append(comment_object)
@@ -87,17 +87,17 @@ def load_data():
 		comment_id_lookup[comment_object["parent_comment_id"]] = comment_object
 
 	f.close()
-	print len(all_comments)
-	print len(root_comments)
-	print len(thread_ids)
+	# print len(all_comments)
+	# print len(root_comments)
+	# print len(thread_ids)
 
 
 def main():
-	# load_data()
-	return
+	load_data()
+	# return
 
 
 if __name__ == "__main__":
-	# main()
-	load_data()
+	main()
+	# load_data()
 
