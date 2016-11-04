@@ -37,15 +37,16 @@ def main():
 	# mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
-	# numberOfThreads(mapping)
+	numberOfThreads(mapping, G)
+
 
 	print G.GetNodes()
 	print G.GetEdges()
 
-def numberOfThreads(mapping):
+def numberOfThreads(mapping, g):
 	rootId = mapping.GetKeyId("root")
-	root = G.GetNI(rootId)
-	# print("The number of threads: {0}".format(root.GetDeg()))
+	root = g.GetNI(rootId)
+	print("The number of threads: {0}".format(root.GetDeg()))
 	
 	
 
