@@ -24,10 +24,20 @@ import snap
 def main():
 	Data_Scraper.load_data()
 	
-	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1)
+	mapping = snap.TStrIntSH()
+	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+	
+	numberOfThreads(mapping)
 
 	print G.GetNodes()
 	print G.GetEdges()
+
+def numberOfThreads(mapping):
+	rootId = mapping.GetKeyId("root")
+	root = G.GetNI(rootId)
+	print("The number of threads: {0}".format(root.GetDeg()))
+	
+	
 
 if __name__ == "__main__":
 	main()
