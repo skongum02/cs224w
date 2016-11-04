@@ -1,5 +1,6 @@
 import Data_Scraper
 import snap
+import numpy as np
 
 ### READ ME ###
 #--------------------------------#
@@ -21,23 +22,40 @@ import snap
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+def maxDepthRecur(G, nid):
+	depthvec = [0]
+	for reply in G.GetNI(nid).GetOutEdges():
+		depthvec.append(maxDepthRecur(G,reply))
+	return max(depthvec)+1
+def getMaxDepth(G, nid):
+	return maxDepthRecur(G, nid)-1
+
+
+
 def main():
 	Data_Scraper.load_data()
 	
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
-	numberOfThreads(mapping)
+	numberOfThreads(G, mapping)
 
 	print G.GetNodes()
 	print G.GetEdges()
 
-def numberOfThreads(mapping):
+def numberOfThreads(G, mapping):
 	rootId = mapping.GetKeyId("root")
 	root = G.GetNI(rootId)
 	print("The number of threads: {0}".format(root.GetDeg()))
+	for i in range(30):
+		print("max_depth of node " + str(mapping.GetKey(i)) +" is: " + str(getTreeSize(G,i)))
 	
 	
 
 if __name__ == "__main__":
 	main()
+
+
+
+
+
