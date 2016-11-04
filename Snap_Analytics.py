@@ -1,5 +1,7 @@
 import Data_Scraper
 import snap
+import numpy
+import matplotlib.pyplot as plt
 
 ### READ ME ###
 #--------------------------------#
@@ -27,16 +29,42 @@ def main():
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
-	numberOfThreads(mapping, G)
+	root = getRootNode(mapping, G)
+	
+	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 
 	print G.GetNodes()
 	print G.GetEdges()
 
-def numberOfThreads(mapping, g):
+def getRootNode(mapping, g):
 	rootId = mapping.GetKeyId("root")
 	root = g.GetNI(rootId)
-	print("The number of threads: {0}".format(root.GetDeg()))
+	print("The number of threads: {0}".format(root.GetOutDeg()))
+	return root
 	
+def getCommentHistogram(firstLevelNodes, g):
+	hist = []
+	for node in firstLevelNodes:
+		commentsInThread = _findDepth(node, g)
+		hist.append(commentsInThread)
+	print("Number of comments of total comments is {0}".format(len(hist)))
+	print("mean {0}, stddev {1}".format(numpy.mean(hist), numpy.std(hist)))
+	plt.hist(hist, log=True)
+	plt.show()
+	return hist
+
+#BFS
+def _findDepth(node, g):
+	nodes = [node]
+	totalNodes = []
+	while len(nodes) > 0:
+		currentNode = nodes[0]
+		totalNodes.append(currentNode)
+		nodes.pop(0)
+		children = [g.GetNI(i) for i in currentNode.GetOutEdges()]
+		nodes.extend(children)
+	return len(totalNodes)
+		
 	
 
 if __name__ == "__main__":
