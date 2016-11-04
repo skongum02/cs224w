@@ -2,6 +2,7 @@ import Data_Scraper
 import snap
 import numpy
 import matplotlib.pyplot as plt
+import copy
 
 ### READ ME ###
 #--------------------------------#
@@ -23,8 +24,16 @@ import matplotlib.pyplot as plt
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+def measure_comment_lengths():
+	comment_length_count = {}
+
+	for comment in Data_Scraper.all_comments:
+		content = comment.content
+		print content
+
 def main():
 	Data_Scraper.load_data()
+	measure_comment_lengths()
 	
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
@@ -32,6 +41,7 @@ def main():
 	root = getRootNode(mapping, G)
 	
 	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+
 
 	print G.GetNodes()
 	print G.GetEdges()
