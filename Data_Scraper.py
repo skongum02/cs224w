@@ -92,9 +92,21 @@ def load_data():
 	# print len(thread_ids)
 
 
+# Writes the edge list file. Thread nodes have central root node as parent.
+def write_edge_list():
+	f = open('politics_edge_list.txt','w')
+	for (parent, child) in comment_edges:
+		f.write(parent + "\t" + child + "\n")
+	for thread_id in thread_ids:
+		f.write("root\t" + thread_id + "\n")
+	f.close()
+
 def main():
 	load_data()
-	# return
+
+	# write_edge_list
+
+	return
 
 
 if __name__ == "__main__":
