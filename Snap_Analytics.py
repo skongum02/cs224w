@@ -1,6 +1,12 @@
 import Data_Scraper
 import snap
+<<<<<<< HEAD
 import numpy as np
+=======
+import numpy
+import matplotlib.pyplot as plt
+import copy
+>>>>>>> fdf98d8d404652a518a5cce7c08c93f84d4aed9c
 
 ### READ ME ###
 #--------------------------------#
@@ -22,6 +28,7 @@ import numpy as np
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+<<<<<<< HEAD
 def maxDepthRecur(G, nid):
 	depthvec = [0]
 	for reply in G.GetNI(nid).GetOutEdges():
@@ -31,25 +38,72 @@ def getMaxDepth(G, nid):
 	return maxDepthRecur(G, nid)-1
 
 
+=======
+def measure_comment_lengths():
+	comment_length_count = {}
+
+	for comment in Data_Scraper.all_comments:
+		content = comment.content
+		print content
+>>>>>>> fdf98d8d404652a518a5cce7c08c93f84d4aed9c
 
 def main():
 	Data_Scraper.load_data()
+	measure_comment_lengths()
 	
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
+<<<<<<< HEAD
 	numberOfThreads(G, mapping)
+=======
+	root = getRootNode(mapping, G)
+	
+	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+
+>>>>>>> fdf98d8d404652a518a5cce7c08c93f84d4aed9c
 
 	print G.GetNodes()
 	print G.GetEdges()
 
+<<<<<<< HEAD
 def numberOfThreads(G, mapping):
 	rootId = mapping.GetKeyId("root")
 	root = G.GetNI(rootId)
 	print("The number of threads: {0}".format(root.GetDeg()))
 	for i in range(30):
 		print("max_depth of node " + str(mapping.GetKey(i)) +" is: " + str(getTreeSize(G,i)))
+=======
+def getRootNode(mapping, g):
+	rootId = mapping.GetKeyId("root")
+	root = g.GetNI(rootId)
+	print("The number of threads: {0}".format(root.GetOutDeg()))
+	return root
+>>>>>>> fdf98d8d404652a518a5cce7c08c93f84d4aed9c
 	
+def getCommentHistogram(firstLevelNodes, g):
+	hist = []
+	for node in firstLevelNodes:
+		commentsInThread = _findDepth(node, g)
+		hist.append(commentsInThread)
+	print("Number of comments of total comments is {0}".format(len(hist)))
+	print("mean {0}, stddev {1}".format(numpy.mean(hist), numpy.std(hist)))
+	plt.hist(hist, log=True)
+	plt.show()
+	return hist
+
+#BFS
+def _findDepth(node, g):
+	nodes = [node]
+	totalNodes = []
+	while len(nodes) > 0:
+		currentNode = nodes[0]
+		totalNodes.append(currentNode)
+		nodes.pop(0)
+		children = [g.GetNI(i) for i in currentNode.GetOutEdges()]
+		nodes.extend(children)
+	return len(totalNodes)
+		
 	
 
 if __name__ == "__main__":

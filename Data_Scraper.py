@@ -28,6 +28,7 @@
 
 
 from sets import Set
+from Comment import Comment
 
 # <subreddit_name>	-> 0 
 # <time_stamp>  	 	-> 1
@@ -77,19 +78,15 @@ def load_data():
 		comment_object["content"] = arr[9]
 
 
-		# if comment_object["comment_id"] == '2nsjqy':
-		# 	print comment_object
+		this_comment = Comment(comment_object)
 		if comment_object["parent_comment_id"] == comment_object["thread_id"]:
 			# This is a root node for a comment tree
-			root_comments.append(comment_object)
-		all_comments.append(comment_object)
+			root_comments.append(this_comment)
+		all_comments.append(this_comment)
 
 		comment_id_lookup[comment_object["parent_comment_id"]] = comment_object
 
 	f.close()
-	# print len(all_comments)
-	# print len(root_comments)
-	# print len(thread_ids)
 
 
 # Writes the edge list file. Thread nodes have central root node as parent.
