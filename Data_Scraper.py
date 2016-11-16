@@ -29,6 +29,7 @@
 
 from sets import Set
 from Comment import Comment
+import re
 
 # <subreddit_name>	-> 0 
 # <time_stamp>  	 	-> 1
@@ -75,7 +76,10 @@ def load_data():
 		comment_object["score"] = int(arr[6])
 		comment_object["thread_id"] = arr[8]
 		thread_ids.add(arr[8])
-		comment_object["content"] = arr[9]
+
+		content = arr[9]
+		content = re.sub(' ?<EOS> ?', '', content)
+		comment_object["content"] = content
 
 
 		this_comment = Comment(comment_object)

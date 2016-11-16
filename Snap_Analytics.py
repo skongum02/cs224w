@@ -3,6 +3,7 @@ import snap
 import numpy
 import matplotlib.pyplot as plt
 import copy
+from collections import deque
 
 ### READ ME ###
 #--------------------------------#
@@ -24,36 +25,23 @@ import copy
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+# Helper function, not to be called directly
 def maxDepthRecur(G, nid):
 	depthvec = [0]
 	for reply in G.GetNI(nid).GetOutEdges():
 		depthvec.append(maxDepthRecur(G,reply))
 	return max(depthvec)+1
+
 def getMaxDepth(G, nid):
 	return maxDepthRecur(G, nid)-1
 
-
+"""### NOT DONE YET ###"""
 def measure_comment_lengths():
 	comment_length_count = {}
 
 	for comment in Data_Scraper.all_comments:
 		content = comment.content
 		print content
-
-def main():
-	Data_Scraper.load_data()
-	measure_comment_lengths()
-	
-	mapping = snap.TStrIntSH()
-	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
-	
-	root = getRootNode(mapping, G)
-	
-	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
-
-
-	print G.GetNodes()
-	print G.GetEdges()
 
 def getRootNode(mapping, g):
 	rootId = mapping.GetKeyId("root")
@@ -84,7 +72,44 @@ def _findDepth(node, g):
 		nodes.extend(children)
 	return len(totalNodes)
 		
+
+# newRoot should be the actual node ID in g.
+# newRoot = mapping.GetKeyId(orig_id)
+def makeSubGraph(g, newRoot):
+
+	newRoot_NI = g.GetNI(newRoot)
+
+	newRoot_graph = snap.TNGraph.New()
+	newRoot_graph.AddNode(newRoot)
+
+
+	queue = deque([newRoot_NI])
+
+	while len(queue) > 0:
+		NI = queue.popleft()
+		for nid in NI.GetOutEdges():
+			newRoot_graph.AddNode(nid)
+			queue.append(g.GetNI(nid))
+			newRoot_graph.AddEdge(NI.GetId(), nid)
+
+	return newRoot_graph
+
+
+def main():
+	Data_Scraper.load_data()
+
+	measure_comment_lengths()
 	
+	mapping = snap.TStrIntSH()
+	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+
+	root = getRootNode(mapping, G)
+	
+	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+
+	print G.GetNodes()
+	print G.GetEdges()
+
 
 if __name__ == "__main__":
 	main()
