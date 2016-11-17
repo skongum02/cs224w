@@ -78,7 +78,7 @@ def load_data():
 		thread_ids.add(arr[8])
 
 		content = arr[9]
-		content = re.sub(' ?<EOS> ?', '', content)
+		content = re.sub(' ?<EOS> ?', ' . ', content)
 		comment_object["content"] = content
 
 
