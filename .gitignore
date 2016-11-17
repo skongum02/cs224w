@@ -3,3 +3,5 @@ politics.tsv
 *.pyc
 _snap.so
 snap.py
+*.pickle
+*.pkl

@@ -110,8 +110,8 @@ def getCommentHistogram(firstLevelNodes, g):
 		hist.append(commentsInThread)
 	print("Number of comments of total comments is {0}".format(len(hist)))
 	print("mean {0}, stddev {1}".format(numpy.mean(hist), numpy.std(hist)))
-	plt.hist(hist, log=True)
-	plt.show()
+	#plt.hist(hist, log=True)
+	#plt.show()
 	return hist
 
 #BFS
@@ -161,7 +161,7 @@ def main():
 	#stats_vec = comment_statistics(mapping, G)
 	#print(stats_vec[4])
 	print('before comment histogram')
-	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats.pkl', 'wb')
 	#pickle.dump(stats_vec,output)
 	sort_comments_by_degree(200, mapping)
