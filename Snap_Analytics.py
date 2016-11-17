@@ -36,8 +36,8 @@ def get_comment_from_nid(nid):
 
 
 
-#sorts statistics of commnets by degree
-def sort_comments_by_degree(cutoff, mapping):
+#sorts statistics of comments by degree (pv=1), maxdepth (pv=2), or treesize (pv=3)
+def sort_comments(cutoff, mapping, pv):
 	print("before open pickle")
 	pkl_file = open('comment_stats.pkl', 'rb')
 	print("after open pickle")
@@ -55,7 +55,7 @@ def sort_comments_by_degree(cutoff, mapping):
 	#	comment_stats2.append(c)
 	print("before sort")
 	print comment_stats2[0]
-	comment_stats2 = sorted(comment_stats2, key=lambda x: x[1], reverse=True)
+	comment_stats2 = sorted(comment_stats2, key=lambda x: x[pv], reverse=True)
 	print comment_stats2[0]
 	comment_name = mapping.GetKey(int(comment_stats2[0][0]))
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
