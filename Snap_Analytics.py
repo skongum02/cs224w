@@ -3,6 +3,7 @@ import snap
 import numpy
 import matplotlib.pyplot as plt
 import copy
+import pickle
 
 ### READ ME ###
 #--------------------------------#
@@ -24,6 +25,57 @@ import copy
 #	content: The string that represents the actual text of the comment
 #--------------------------------#
 
+#returns a vector that contains the normalized degree, tree size, and depth of each comment in the dataset
+
+def get_comment_from_nid(nid):
+	comment_name = mapping.GetKey(comment_stats2[0])
+	comment_obj = comment_id_lookup[comment_name]
+	return comment_obj
+
+
+
+#sorts statistics of commnets by degree
+def sort_comments_by_degree(cutoff, mapping):
+	print("before open pickle")
+	pkl_file = open('comment_stats.pkl', 'rb')
+	print("after open pickle")
+	comment_stats = pickle.load(pkl_file)
+	print("after load pickle")
+	comment_stats = numpy.array(comment_stats)
+	comment_stats2 = []
+	for i in range(len(comment_stats)):
+		#print comment_stats[i][4]
+		if(comment_stats[i][4] >= cutoff):
+			#numpy.delete(comment_stats,i,0)
+			comment_stats2.append(comment_stats[i])
+	#comment_stats2 = []
+	#for c in comment_stats:
+	#	comment_stats2.append(c)
+	print("before sort")
+	print comment_stats2[0]
+	comment_stats2 = sorted(comment_stats2, key=lambda x: x[1], reverse=True)
+	print comment_stats2[0]
+	comment_name = mapping.GetKey(int(comment_stats2[0][0]))
+	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
+	print(comment_obj.content)
+	return comment_stats2
+
+
+
+def comment_statistics(mapping, g):
+	stats_vec = []
+	root = getRootNode(mapping, g)
+	for thread in root.GetOutEdges():
+		#print(thread)
+		threadsize = _findDepth(g.GetNI(thread), g)
+		for n in g.GetNI(thread).GetOutEdges():
+			deg = (g.GetNI(n).GetDeg()-1)/float(threadsize)
+			maxdepth = getMaxDepth(g,n)/float(threadsize)
+			treesize = _findDepth(g.GetNI(n),g)/float(threadsize)
+			stats_vec.append([n,deg,maxdepth,treesize,threadsize])
+	return stats_vec
+
+
 def maxDepthRecur(G, nid):
 	depthvec = [0]
 	for reply in G.GetNI(nid).GetOutEdges():
@@ -41,17 +93,22 @@ def measure_comment_lengths():
 		print content
 
 def main():
+	print('begin main')
 	Data_Scraper.load_data()
-	measure_comment_lengths()
+	#measure_comment_lengths()
 	
+	print('before mapping')
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	root = getRootNode(mapping, G)
-	
-	getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
-
-
+	#stats_vec = comment_statistics(mapping, G)
+	#print(stats_vec[4])
+	print('before comment histogram')
+	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+	#output = open('comment_stats.pkl', 'wb')
+	#pickle.dump(stats_vec,output)
+	sort_comments_by_degree(200, mapping)
 	print G.GetNodes()
 	print G.GetEdges()
 
