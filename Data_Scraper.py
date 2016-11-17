@@ -79,7 +79,7 @@ def load_data():
 
 		content = arr[9]
 		content = re.sub(' ?<EOS> ?', ' . ', content)
-		comment_object["content"] = content
+		comment_object["content"] = content.lower()
 
 
 		this_comment = Comment(comment_object)
