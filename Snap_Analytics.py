@@ -37,6 +37,7 @@ def get_comment_from_nid(nid, mapping):
 
 
 #sorts statistics of comments by degree (pv=1), maxdepth (pv=2), treesize (pv=3), or upvotes (pv=4)
+#comment_stats2[i] = [node ID, normalized degree, normalized maxdepth, normalized treesize, normalized upvotes, threadsize]
 def sort_comments(cutoff, mapping, pv):
 	print("before open pickle")
 	pkl_file = open('comment_stats2.pkl', 'rb')
@@ -54,11 +55,11 @@ def sort_comments(cutoff, mapping, pv):
 	#comment_stats2 = []
 	#for c in comment_stats:
 	#	comment_stats2.append(c)
-	print("before sort")
-	print comment_stats2[0]
+	#print("before sort")
+	#print comment_stats2[0]
 	comment_stats2 = sorted(comment_stats2, key=lambda x: x[pv], reverse=True)
-	print comment_stats2[0]
-	comment_name = mapping.GetKey(int(comment_stats2[0][0]))
+	print comment_stats2[2]
+	comment_name = mapping.GetKey(int(comment_stats2[2][0]))
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
 	print(comment_obj.content)
 	print('root comments in large threads = ' + str(len(comment_stats2)))
@@ -166,9 +167,9 @@ def main():
 	print('before comment histogram')
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats2.pkl', 'wb')
-	pickle.dump(stats_vec,output)
+	#pickle.dump(stats_vec,output)
 	#output.close()
-	sort_comments(200, mapping, 4)
+	sort_comments(200, mapping, 1)
 	print G.GetNodes()
 	print G.GetEdges()
 
