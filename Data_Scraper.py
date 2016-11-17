@@ -88,7 +88,7 @@ def load_data():
 			root_comments.append(this_comment)
 		all_comments.append(this_comment)
 
-		comment_id_lookup[comment_object["parent_comment_id"]] = comment_object
+		comment_id_lookup[this_comment.comment_id] = this_comment
 
 	f.close()
 

@@ -82,7 +82,6 @@ def makeSubGraph(g, newRoot):
 	newRoot_graph = snap.TNGraph.New()
 	newRoot_graph.AddNode(newRoot)
 
-
 	queue = deque([newRoot_NI])
 
 	while len(queue) > 0:
@@ -102,6 +101,10 @@ def main():
 	
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+	# # convert input string to node id
+	# NodeId = mapping.GetKeyId("1065")
+	# # convert node id to input string
+	# NodeName = mapping.GetKey(NodeId)
 
 	root = getRootNode(mapping, G)
 	
