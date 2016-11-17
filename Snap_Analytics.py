@@ -36,7 +36,7 @@ def get_comment_from_nid(nid):
 
 
 
-#sorts statistics of comments by degree (pv=1), maxdepth (pv=2), or treesize (pv=3)
+#sorts statistics of comments by degree (pv=1), maxdepth (pv=2), treesize (pv=3), or upvotes (pv=4)
 def sort_comments(cutoff, mapping, pv):
 	print("before open pickle")
 	pkl_file = open('comment_stats.pkl', 'rb')
@@ -47,7 +47,7 @@ def sort_comments(cutoff, mapping, pv):
 	comment_stats2 = []
 	for i in range(len(comment_stats)):
 		#print comment_stats[i][4]
-		if(comment_stats[i][4] >= cutoff):
+		if(comment_stats[i][5] >= cutoff):
 			#numpy.delete(comment_stats,i,0)
 			comment_stats2.append(comment_stats[i])
 	#comment_stats2 = []
@@ -60,6 +60,7 @@ def sort_comments(cutoff, mapping, pv):
 	comment_name = mapping.GetKey(int(comment_stats2[0][0]))
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
 	print(comment_obj.content)
+	print('root comments in large threads = ' + str(len(comment_stats2)))
 	return comment_stats2
 
 
@@ -74,7 +75,8 @@ def comment_statistics(mapping, g):
 			deg = (g.GetNI(n).GetDeg()-1)/float(threadsize)
 			maxdepth = getMaxDepth(g,n)/float(threadsize)
 			treesize = _findDepth(g.GetNI(n),g)/float(threadsize)
-			stats_vec.append([n,deg,maxdepth,treesize,threadsize])
+			upvotes = get_comment_from_nid(nid).score/float(threadsize)
+			stats_vec.append([n,deg,maxdepth,treesize,upvotes,threadsize])
 	return stats_vec
 
 
@@ -164,7 +166,7 @@ def main():
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats.pkl', 'wb')
 	#pickle.dump(stats_vec,output)
-	sort_comments_by_degree(200, mapping)
+	sort_comments(200, mapping, 4)
 	print G.GetNodes()
 	print G.GetEdges()
 
