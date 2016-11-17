@@ -29,9 +29,9 @@ from collections import deque
 
 #returns a vector that contains the normalized degree, tree size, and depth of each comment in the dataset
 
-def get_comment_from_nid(nid):
-	comment_name = mapping.GetKey(comment_stats2[0])
-	comment_obj = comment_id_lookup[comment_name]
+def get_comment_from_nid(nid, mapping):
+	comment_name = mapping.GetKey(nid)
+	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
 	return comment_obj
 
 
@@ -39,9 +39,10 @@ def get_comment_from_nid(nid):
 #sorts statistics of comments by degree (pv=1), maxdepth (pv=2), treesize (pv=3), or upvotes (pv=4)
 def sort_comments(cutoff, mapping, pv):
 	print("before open pickle")
-	pkl_file = open('comment_stats.pkl', 'rb')
+	pkl_file = open('comment_stats2.pkl', 'rb')
 	print("after open pickle")
 	comment_stats = pickle.load(pkl_file)
+	pkl_file.close()
 	print("after load pickle")
 	comment_stats = numpy.array(comment_stats)
 	comment_stats2 = []
@@ -75,7 +76,7 @@ def comment_statistics(mapping, g):
 			deg = (g.GetNI(n).GetDeg()-1)/float(threadsize)
 			maxdepth = getMaxDepth(g,n)/float(threadsize)
 			treesize = _findDepth(g.GetNI(n),g)/float(threadsize)
-			upvotes = get_comment_from_nid(nid).score/float(threadsize)
+			upvotes = get_comment_from_nid(n, mapping).score/float(threadsize)
 			stats_vec.append([n,deg,maxdepth,treesize,upvotes,threadsize])
 	return stats_vec
 
@@ -160,12 +161,13 @@ def main():
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	root = getRootNode(mapping, G)
-	#stats_vec = comment_statistics(mapping, G)
+	stats_vec = comment_statistics(mapping, G)
 	#print(stats_vec[4])
 	print('before comment histogram')
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
-	#output = open('comment_stats.pkl', 'wb')
-	#pickle.dump(stats_vec,output)
+	#output = open('comment_stats2.pkl', 'wb')
+	pickle.dump(stats_vec,output)
+	#output.close()
 	sort_comments(200, mapping, 4)
 	print G.GetNodes()
 	print G.GetEdges()
