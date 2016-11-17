@@ -171,9 +171,19 @@ def main():
 	sort_comments_by_degree(200, mapping)
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats2.pkl', 'wb')
+
 	#pickle.dump(stats_vec,output)
 	#output.close()
 	sort_comments(200, mapping, 1)
+
+	# pickle.dump(stats_vec,output)
+	#output.close()
+
+	# print "Nodes: " + str(Data_Scraper.all_comments)
+	# print "Threads: " + str(len(Data_Scraper.thread_ids))
+	# print "Root comments: " + str(len(Data_Scraper.root_comments))
+	
+
 	print G.GetNodes()
 	print G.GetEdges()
 
