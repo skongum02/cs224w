@@ -59,6 +59,7 @@ comment_id_lookup = {}
 
 # Specifically tailored for the /r/politics dataset
 def load_data():
+	print("loading data")
 	f = open("politics.tsv", "r")
 	lines = f.readlines()
 

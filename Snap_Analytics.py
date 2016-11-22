@@ -40,7 +40,7 @@ def get_comment_from_nid(nid, mapping):
 #comment_stats2[i] = [node ID, normalized degree, normalized maxdepth, normalized treesize, normalized upvotes, threadsize]
 def sort_comments(cutoff, mapping, pv):
 	print("before open pickle")
-	pkl_file = open('comment_stats2.pkl', 'rb')
+	pkl_file = open('comment_stats.pkl', 'rb')
 	print("after open pickle")
 	comment_stats = pickle.load(pkl_file)
 	pkl_file.close()
@@ -58,12 +58,12 @@ def sort_comments(cutoff, mapping, pv):
 	#print("before sort")
 	#print comment_stats2[0]
 	comment_stats2 = sorted(comment_stats2, key=lambda x: x[pv], reverse=True)
-	print comment_stats2[2]
+	#print comment_stats2[2]
 	comment_name = mapping.GetKey(int(comment_stats2[2][0]))
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
-	print(comment_obj.content)
-	print('root comments in large threads = ' + str(len(comment_stats2)))
-	return comment_stats2
+	#print(comment_obj.content)
+	#print('root comments in large threads = ' + str(len(comment_stats2)))
+	return [Data_Scraper.comment_id_lookup[mapping.GetKey(int(comment_stats2[i][0]))] for i in range(len(comment_stats2))]
 
 
 
@@ -162,14 +162,29 @@ def main():
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	root = getRootNode(mapping, G)
-	stats_vec = comment_statistics(mapping, G)
+	#stats_vec = comment_statistics(mapping, G)
 	#print(stats_vec[4])
 	print('before comment histogram')
+
+	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
+	#output = open('comment_stats.pkl', 'wb')
+	#pickle.dump(stats_vec,output)
+
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats2.pkl', 'wb')
+
 	#pickle.dump(stats_vec,output)
 	#output.close()
 	sort_comments(200, mapping, 1)
+
+	# pickle.dump(stats_vec,output)
+	#output.close()
+
+	# print "Nodes: " + str(Data_Scraper.all_comments)
+	# print "Threads: " + str(len(Data_Scraper.thread_ids))
+	# print "Root comments: " + str(len(Data_Scraper.root_comments))
+	
+
 	print G.GetNodes()
 	print G.GetEdges()
 

@@ -1,9 +1,15 @@
 from nltk.classify import NaiveBayesClassifier
 import csv
 import os
+import Snap_Analytics
+import pickle
+import Data_Scraper
+import snap
+
+
+namesOfScoreSystems = ["degree", "maxdepth", "treesize", "upvotes", "combined"]
 
 def loadClassifier():
-    import pickle
     f = open('nbClassifier.pickle', 'rb')
     classifier = pickle.load(f)
     f.close()
@@ -52,16 +58,66 @@ def loadMovieReviewData():
             bow.append((dict, '0'))
     return bow
     
+    
+def convertCommentsListToTuple(data, cat):
+    return [(createDictionary(i.content), cat ) for i in data]
+    
+    
 def createClassifier():
-    trainingTweet = loadTrainingTweet()
-    twitterData = loadTwitterData()
-    currentData = loadMovieReviewData()
-    classifier =  NaiveBayesClassifier.train(trainingTweet + twitterData + currentData)
-    import pickle
-    f = open('nbClassifier.pickle', 'wb')
-    pickle.dump(classifier, f)
-    f.close()
+    Data_Scraper.load_data()
+    print('before mapping')
+    mapping = snap.TStrIntSH()
+    G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+    
+    rankedCommentsPos = []
+    rankedCommentsNeg = []
+    combinedNeg = []
+    combinedPos = []
+    
+    commentsToTake = 20000
+    
+    for i in range(4):
+        rankedCommentData = Snap_Analytics.sort_comments(200, mapping,i)
+        rankedCommentsPos.append(rankedCommentData[:commentsToTake])
+        rankedCommentsNeg.append(rankedCommentData[len(rankedCommentData)-commentsToTake:len(rankedCommentData)])
+        combinedPos.extend(rankedCommentData[:commentsToTake/4])
+        combinedNeg.extend(rankedCommentData[len(rankedCommentData)-commentsToTake/4:len(rankedCommentData)])
+    
+    rankedCommentsPos.append(combinedPos)
+    rankedCommentsNeg.append(combinedNeg)
+    
+    for i,n in enumerate(namesOfScoreSystems):
+        posData = convertCommentsListToTuple(rankedCommentsPos[i], '1')
+        negData = convertCommentsListToTuple(rankedCommentsNeg[i], '0')
+        classifier =  NaiveBayesClassifier.train(posData + negData)
+        f = open(n + '_nbClassifier.pkl', 'wb')
+        pickle.dump(classifier, f)
+        f.close()
 
+def loadClassifiers():
+    classifiers = []
+    for n in namesOfScoreSystems:
+        f = open(n + '_nbClassifier.pkl', 'rb')
+        classifier = pickle.load(f)
+        f.close()
+        classifiers.append(classifier)
+    return classifiers
+    
+def classify(classifiers):
+    Data_Scraper.load_data()
+    commentMap = {}
+    print len(Data_Scraper.all_comments)
+    for c, comment in enumerate(Data_Scraper.all_comments):
+        #["degree", "maxdepth", "treesize", "upvotes", "combined"]
+        dict = createDictionary(comment.content)
+        classifications = [classifiers[i].classify(dict) for i in range(len(namesOfScoreSystems))]
+        commentMap[comment.comment_id] = tuple(classifications)
+    print ("Finished writing")
+    f = open("classifiedComments.pkl", 'wb')
+    pickle.dump(commentMap, f)
+    f.close()
+    
+#classify(loadClassifiers())
 
 
 #"<EOS> hey ted go shit and piss in your pants for 7 days because you were drafted for the vietnam war <EOS> you know the war where guns are used that your are a big supporter of <EOS> you giant hulking piece of shit and primary example of why selective breeding should be in place <EOS>"
