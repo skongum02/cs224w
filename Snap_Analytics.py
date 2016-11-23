@@ -7,6 +7,7 @@ import copy
 import pickle
 from collections import deque
 from textstat.textstat import textstat
+import re
 
 
 ### READ ME ###
@@ -131,16 +132,55 @@ def measure_comment_lengths():
 def FK_histogram():
 	print "Measuring Flesch-Kincaid scores..."
 	FK_scores = {}
-	for comment in Data_Scraper.all_comments:
-		content = comment.content
-		num = textstat.flesch_kincaid_grade(content)
-		if num is not None:
-			fk_score = math.floor(num)
-			if fk_score in FK_scores:
-				FK_scores[fk_score] += 1
-			else:
-				FK_scores[fk_score] = 1
-	return FK_scores
+	# counter = 0
+	# for comment in Data_Scraper.all_comments:
+	# 	counter += 1
+	# 	if counter %100000 == 0:
+	# 		print str(counter) + " comments done"
+	# 	content = comment.content
+	# 	content = content[3:].replace(" .", ".")
+	# 	if not re.search('[a-zA-Z]', content):
+	# 		continue
+
+	# 	""" DO THIS TOO: grade_level = textstat.text_standard(test_data) """
+	# 	fk_score = math.floor(textstat.flesch_reading_ease(content))
+	# 	if fk_score in FK_scores:
+	# 		FK_scores[fk_score] += 1
+	# 	else:
+	# 		FK_scores[fk_score] = 1
+
+	# f = open("FK_reading_ease_histogram.txt", "w")
+	# for key,value in FK_scores.iteritems():
+	# 	f.write(str(key) + "\t" + str(value) + "\n")
+	# f.close()
+	# print "File written"
+
+	FK_scores = {}
+
+	f = open("FK_reading_ease_histogram.txt", "r")
+	lines = f.readlines()
+	for line in lines:
+		tup = line.split('\t')
+		print tup
+		# To account for the '\n' at the end of each line
+		x = math.floor(float(tup[0]))
+		if x not in FK_scores:
+			FK_scores[x] = 0
+		FK_scores[x] += int(tup[1].rstrip('\n'))
+	f.close()
+	print FK_scores
+
+	plt.figure(1)
+	# plt.hist(length_histogram)
+	X = [key for key,value in FK_scores.iteritems()]
+	Y = [value for key,value in FK_scores.iteritems()]
+	plt.bar(X,Y)
+	plt.xlim((0, 200))
+	plt.title("Flesch-Kincaid Reading Ease of Comments")
+	plt.ylabel("Frequency")
+	plt.xlabel("Flesch-Kincaid Reading Ease Score")
+	plt.show()
+	# return FK_scores
 
 
 
@@ -199,25 +239,14 @@ def main():
 	print('begin main')
 	Data_Scraper.load_data()
 	#measure_comment_lengths()
+
+	# FK_histogram()
 	
 	print('before mapping')
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	root = getRootNode(mapping, G)
-	length_histogram = measure_comment_lengths()
-
-	# plt.figure(1)
-	# FK_scores = FK_histogram()
-	# X = [key for key,value in FK_scores.iteritems()]
-	# Y = [value for key,value in FK_scores.iteritems()]
-	# plt.plot(X,Y,"bo")
-	# plt.title("Flesch-Kincaid Scores")
-	# plt.ylabel("Frequency")
-	# plt.xlabel("Flesh-Kincaid Score")
-	# plt.show()
-
-
 
 
 	#stats_vec = comment_statistics(mapping, G)
