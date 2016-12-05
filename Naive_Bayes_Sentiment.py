@@ -60,33 +60,54 @@ def loadMovieReviewData():
     
     
 def convertCommentsListToTuple(data, cat):
-    return [(createDictionary(i.content), cat ) for i in data]
+    return [(createDictionary(i[0].content), cat ) for i in data]
     
+
+def getDataSource(forceReload=False):
+    dataSourceFileName = "scoring.pkl"
+    import os.path
     
-def createClassifier():
-    Data_Scraper.load_data()
-    print('before mapping')
-    mapping = snap.TStrIntSH()
-    G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
-    
-    rankedCommentsPos = []
-    rankedCommentsNeg = []
-    combinedNeg = []
-    combinedPos = []
-    
-    commentsToTake = 20000
-    
-    for i in range(4):
-        rankedCommentData = Snap_Analytics.sort_comments(200, mapping,i)
-        rankedCommentsPos.append(rankedCommentData[:commentsToTake])
-        rankedCommentsNeg.append(rankedCommentData[len(rankedCommentData)-commentsToTake:len(rankedCommentData)])
-        combinedPos.extend(rankedCommentData[:commentsToTake/4])
-        combinedNeg.extend(rankedCommentData[len(rankedCommentData)-commentsToTake/4:len(rankedCommentData)])
-    
-    rankedCommentsPos.append(combinedPos)
-    rankedCommentsNeg.append(combinedNeg)
-    
+    if forceReload or not os.path.isfile(dataSourceFileName) :
+        Data_Scraper.load_data()
+        print('before mapping')
+        mapping = snap.TStrIntSH()
+        G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+        
+        rankedCommentsPos = []
+        rankedCommentsNeg = []
+        combinedNeg = []
+        combinedPos = []
+        
+        #1000000
+        commentsToTake = 5000
+        
+        for i in range(1, 5):
+            rankedCommentData = Snap_Analytics.sort_comments(60, mapping,i)
+            rankedCommentsPos.append(rankedCommentData[:commentsToTake])
+            rankedCommentsNeg.append(rankedCommentData[len(rankedCommentData)-commentsToTake*4:len(rankedCommentData)])
+            combinedPos.extend(rankedCommentData[:commentsToTake/4])
+            combinedNeg.extend(rankedCommentData[len(rankedCommentData)-(commentsToTake*4)/4:len(rankedCommentData)])
+        
+        rankedCommentsPos.append(combinedPos)
+        rankedCommentsNeg.append(combinedNeg)
+        
+        f = open(dataSourceFileName, 'wb')
+        pickle.dump((rankedCommentsPos, rankedCommentsNeg), f)
+        f.close()
+        return (rankedCommentsPos, rankedCommentsNeg)
+        
+    else:
+        print("loading from file")
+        f = open(dataSourceFileName, 'rb')
+        classifier = pickle.load(f)
+        f.close()
+        return (classifier[0], classifier[1])
+        
+
+def createClassifier(forceReload = False):
+    rankedCommentsPos, rankedCommentsNeg = getDataSource(forceReload)
     for i,n in enumerate(namesOfScoreSystems):
+        print(n)
         posData = convertCommentsListToTuple(rankedCommentsPos[i], '1')
         negData = convertCommentsListToTuple(rankedCommentsNeg[i], '0')
         classifier =  NaiveBayesClassifier.train(posData + negData)
@@ -97,6 +118,7 @@ def createClassifier():
 def loadClassifiers():
     classifiers = []
     for n in namesOfScoreSystems:
+        print ("Loading " + n)
         f = open(n + '_nbClassifier.pkl', 'rb')
         classifier = pickle.load(f)
         f.close()
@@ -109,14 +131,23 @@ def classify(classifiers):
     print len(Data_Scraper.all_comments)
     for c, comment in enumerate(Data_Scraper.all_comments):
         #["degree", "maxdepth", "treesize", "upvotes", "combined"]
-        dict = createDictionary(comment.content)
-        classifications = [classifiers[i].classify(dict) for i in range(len(namesOfScoreSystems))]
+        dictOfWords = createDictionary(comment.content)
+        classifications = [classifiers[i].prob_classify(dictOfWords).prob('1') for i in range(len(namesOfScoreSystems))]
         commentMap[comment.comment_id] = tuple(classifications)
+        if c%50000 == 0:
+            print(c)
     print ("Finished writing")
     f = open("classifiedComments.pkl", 'wb')
     pickle.dump(commentMap, f)
     f.close()
     
+def loadClassifiedComments():
+    f = open("classifiedComments.pkl", 'rb')
+    classifier = pickle.load(f)
+    f.close()
+    return classifier
+
+#map(sum, zip(*[map(round,map(float,i)) for i in classifier.values()]))
 #classify(loadClassifiers())
 
 

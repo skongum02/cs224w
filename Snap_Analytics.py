@@ -63,7 +63,7 @@ def sort_comments(cutoff, mapping, pv):
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
 	#print(comment_obj.content)
 	#print('root comments in large threads = ' + str(len(comment_stats2)))
-	return [Data_Scraper.comment_id_lookup[mapping.GetKey(int(comment_stats2[i][0]))] for i in range(len(comment_stats2))]
+	return [(Data_Scraper.comment_id_lookup[mapping.GetKey(int(comment_stats2[i][0]))], comment_stats2[i][pv] )for i in range(len(comment_stats2))]
 
 
 
@@ -74,7 +74,7 @@ def comment_statistics(mapping, g):
 		#print(thread)
 		threadsize = _findDepth(g.GetNI(thread), g)
 		for n in g.GetNI(thread).GetOutEdges():
-			deg = (g.GetNI(n).GetDeg()-1)/float(threadsize)
+			deg = (g.GetNI(n).GetDeg()-1) /float(threadsize)
 			maxdepth = getMaxDepth(g,n)/float(threadsize)
 			treesize = _findDepth(g.GetNI(n),g)/float(threadsize)
 			upvotes = get_comment_from_nid(n, mapping).score/float(threadsize)
@@ -187,6 +187,10 @@ def main():
 	print G.GetEdges()
 
 
+def getDegree(G, mapping, nodeId):
+	node = G.GetNI(mapping.GetKeyId(nodeId))
+	return node.GetOutDeg()
+	
 
 
 if __name__ == "__main__":
