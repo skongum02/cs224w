@@ -2,9 +2,12 @@ import Data_Scraper
 import snap
 import numpy
 import matplotlib.pyplot as plt
+import math
 import copy
 import pickle
 from collections import deque
+from textstat.textstat import textstat
+import re
 
 
 ### READ ME ###
@@ -92,13 +95,93 @@ def maxDepthRecur(G, nid):
 def getMaxDepth(G, nid):
 	return maxDepthRecur(G, nid)-1
 
-"""### NOT DONE YET ###"""
+
+# Helper function that counts the number of words (not unique) in a string
+def count_words(content):
+	content = content.split()
+	content = filter(lambda x: "." not in x and "\n" not in x, content)
+	return len(content)
+
+# Creates histogram of comment lengths without periods
 def measure_comment_lengths():
+	print "Measuring comment lengths..."
 	comment_length_count = {}
+
 
 	for comment in Data_Scraper.all_comments:
 		content = comment.content
-		print content
+		content = content.split()
+		content = filter(lambda x: "." not in x and "\n" not in x, content)
+		if len(content) in comment_length_count:
+			comment_length_count[len(content)] += 1
+		else:
+			comment_length_count[len(content)] = 1
+
+	plt.figure(0)
+	# plt.hist(length_histogram)
+	X = [key for key,value in comment_length_count.iteritems()]
+	Y = [value for key,value in comment_length_count.iteritems()]
+	plt.loglog(X,Y,"bo")
+	plt.title("Comment Lengths")
+	plt.ylabel("Frequency")
+	plt.xlabel("Comment Length")
+	plt.show()
+
+	# return comment_length_count
+
+def FK_histogram():
+	print "Measuring Flesch-Kincaid scores..."
+	FK_scores = {}
+	# counter = 0
+	# for comment in Data_Scraper.all_comments:
+	# 	counter += 1
+	# 	if counter %100000 == 0:
+	# 		print str(counter) + " comments done"
+	# 	content = comment.content
+	# 	content = content[3:].replace(" .", ".")
+	# 	if not re.search('[a-zA-Z]', content):
+	# 		continue
+
+	# 	""" DO THIS TOO: grade_level = textstat.text_standard(test_data) """
+	# 	fk_score = math.floor(textstat.flesch_reading_ease(content))
+	# 	if fk_score in FK_scores:
+	# 		FK_scores[fk_score] += 1
+	# 	else:
+	# 		FK_scores[fk_score] = 1
+
+	# f = open("FK_reading_ease_histogram.txt", "w")
+	# for key,value in FK_scores.iteritems():
+	# 	f.write(str(key) + "\t" + str(value) + "\n")
+	# f.close()
+	# print "File written"
+
+	FK_scores = {}
+
+	f = open("FK_reading_ease_histogram.txt", "r")
+	lines = f.readlines()
+	for line in lines:
+		tup = line.split('\t')
+		print tup
+		# To account for the '\n' at the end of each line
+		x = math.floor(float(tup[0]))
+		if x not in FK_scores:
+			FK_scores[x] = 0
+		FK_scores[x] += int(tup[1].rstrip('\n'))
+	f.close()
+	print FK_scores
+
+	plt.figure(1)
+	# plt.hist(length_histogram)
+	X = [key for key,value in FK_scores.iteritems()]
+	Y = [value for key,value in FK_scores.iteritems()]
+	plt.bar(X,Y)
+	plt.xlim((0, 200))
+	plt.title("Flesch-Kincaid Reading Ease of Comments")
+	plt.ylabel("Frequency")
+	plt.xlabel("Flesch-Kincaid Reading Ease Score")
+	plt.show()
+	# return FK_scores
+
 
 
 def getRootNode(mapping, g):
@@ -156,15 +239,18 @@ def main():
 	print('begin main')
 	Data_Scraper.load_data()
 	#measure_comment_lengths()
+
+	# FK_histogram()
 	
 	print('before mapping')
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	root = getRootNode(mapping, G)
+
+
 	#stats_vec = comment_statistics(mapping, G)
 	#print(stats_vec[4])
-	print('before comment histogram')
 	#getCommentHistogram([G.GetNI(n) for n in root.GetOutEdges()], G)
 	#output = open('comment_stats.pkl', 'wb')
 	#pickle.dump(stats_vec,output)
@@ -173,7 +259,7 @@ def main():
 
 	#pickle.dump(stats_vec,output)
 	#output.close()
-	sort_comments(200, mapping, 1)
+	# sort_comments(200, mapping, 1)
 
 	# pickle.dump(stats_vec,output)
 	#output.close()
