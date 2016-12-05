@@ -2,6 +2,8 @@ from gensim.models.word2vec import Word2Vec
 import Data_Scraper
 import snap
 import Snap_Analytics
+import pickle
+import numpy as np
 
 def getDataSource(forceReload=False):
     dataSourceFileName = "scoring_logReg.pkl"
@@ -42,15 +44,24 @@ def getDataSource(forceReload=False):
         classifier = pickle.load(f)
         f.close()
         return (classifier[0], classifier[1])
-        
+
+
+
 def train():
     posComments, negComments = getDataSource()
-    y = np.concatenate((np.ones(len(posComments)), np.zeros(len(negComments))))
-    n_dim = 300
-    #Initialize model and build vocab
-    imdb_w2v = Word2Vec(size=n_dim, min_count=10)
-    imdb_w2v.build_vocab(x_train)
+    classifiers = []
+    for pos, neg in zip(posComments, negComments):
+        posC = [i[0].content.split() for i in pos]
+        negC = [i[0].content.split() for i in neg]
+        y = np.concatenate((np.ones(len(posC)), np.zeros(len(negC))))
+        xTrain = np.concatenate((posC, negC))
+        #Initialize model and build vocab
+        imdb_w2v = Word2Vec(xTrain)
+        print("Build vocab")
+        imdb_w2v.build_vocab(xTrain)
 
-    #Train the model over train_reviews (this may take several minutes)
-    imdb_w2v.train(x_train)
+        #Train the model over train_reviews (this may take several minutes)
+        print("Training")
+        imdb_w2v.train(xTrain)
+        return imdb_w2v
         

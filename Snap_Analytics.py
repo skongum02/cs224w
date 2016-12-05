@@ -6,7 +6,6 @@ import math
 import copy
 import pickle
 from collections import deque
-from textstat.textstat import textstat
 import re
 
 
@@ -130,6 +129,7 @@ def measure_comment_lengths():
 	# return comment_length_count
 
 def FK_histogram():
+	from textstat.textstat import textstat
 	print "Measuring Flesch-Kincaid scores..."
 	FK_scores = {}
 	# counter = 0
