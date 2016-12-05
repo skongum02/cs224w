@@ -29,8 +29,33 @@ from collections import deque
 
 #returns a vector that contains the normalized degree, tree size, and depth of each comment in the dataset
 
+def estimated_delay(nid, mapping, g):
+	#comment = get_comment_from_nid(int(nid), mapping)			
+	comment_name = mapping.GetKey(int(nid))
+	comment = Data_Scraper.comment_id_lookup[comment_name]
+	time = comment.time_stamp
+	thread = comment.thread_id
+
+	root = getRootNode(mapping, g)
+	for thread in root.GetOutEdges():
+		#print(thread)
+
+		time_vec = []
+		for n in g.GetNI(thread).GetOutEdges():
+			c_name = mapping.GetKey(int(n))
+			c = Data_Scraper.comment_id_lookup[c_name]
+			t = c.time_stamp
+			thread_id = c.thread_id
+			if(thread_id == thread):
+				time_vec.append(t)
+		time_vec = numpy.array(time_vec)
+		return time - min(time_vec)
+
+
+
+
 def get_comment_from_nid(nid, mapping):
-	comment_name = mapping.GetKey(nid)
+	comment_name = mapping.GetKey(int(nid))
 	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
 	return comment_obj
 
@@ -74,6 +99,7 @@ def comment_statistics(mapping, g):
 		#print(thread)
 		threadsize = _findDepth(g.GetNI(thread), g)
 		for n in g.GetNI(thread).GetOutEdges():
+			print n
 			deg = (g.GetNI(n).GetDeg()-1)/float(threadsize)
 			maxdepth = getMaxDepth(g,n)/float(threadsize)
 			treesize = _findDepth(g.GetNI(n),g)/float(threadsize)
@@ -175,7 +201,8 @@ def main():
 
 	#pickle.dump(stats_vec,output)
 	#output.close()
-	sort_comments(200, mapping, 1)
+
+	#sort_comments(200, mapping, 1)
 
 	# pickle.dump(stats_vec,output)
 	#output.close()
@@ -183,6 +210,8 @@ def main():
 	# print "Nodes: " + str(Data_Scraper.all_comments)
 	# print "Threads: " + str(len(Data_Scraper.thread_ids))
 	# print "Root comments: " + str(len(Data_Scraper.root_comments))
+
+	print "delay: " + estimated_delay(144834, mapping, G)
 	
 
 	print G.GetNodes()
