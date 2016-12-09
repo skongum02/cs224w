@@ -287,14 +287,6 @@ def main():
 	print('before mapping')
 	mapping = snap.TStrIntSH()
 	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
-	
-	count = 0
-	for node in G.Nodes():
-		comment = get_comment_from_nid(node.GetId(), mapping)
-		if comment in Data_Scraper.all_comments and node.GetOutDeg() >= 5:
-			count += 1
-	print count
-	return
 
 	# for i in xrange(25):
 	# 	sample_random_comment(G, mapping)
@@ -354,7 +346,7 @@ def getNormalizedDegree(G, mapping, nodeId):
 	node = G.GetNI(mapping.GetKeyId(nodeId))
 	deg = node.GetOutDeg()
 	c_object = Data_Scraper.comment_id_lookup[nodeId]
-	threadsize = _findDepth(G.GetNI(c_object.thread_id), G)
+	threadsize = _findDepth(G.GetNI(mapping.GetKeyId(c_object.thread_id)), G)
 	return 1.0*deg/threadsize
 
 	
