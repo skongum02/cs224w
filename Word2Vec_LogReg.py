@@ -5,7 +5,8 @@ import Snap_Analytics
 import pickle
 import numpy as np
 from sklearn.preprocessing import scale
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, LinearRegression
+
 
 Data_Scraper.load_data()
 
@@ -60,13 +61,18 @@ def cleanText(corpus):
     return corpus
 
 
-def train(oneClassifier=False, forceReload=False):
+def train(oneClassifier=False, forceReload=False, classification=True):
     posComments, negComments = getDataSource(forceReload)
     classifiers = []
     for pos, neg in zip(posComments, negComments):
         posC = cleanText(pos)
         negC = cleanText(neg)
-        y = np.concatenate((np.ones(len(posC)), np.zeros(len(negC))))
+        if classification:
+            y = np.concatenate((np.ones(len(posC)), np.zeros(len(negC))))
+        else:
+            posY = [z[1] for z in pos]
+            negY = [i[1] for i in neg]
+            y = np.concatenate((posY, negY))
         xTrain = np.concatenate((posC, negC))
         #Initialize model and build vocab
         #imdb_w2v = Word2Vec(xTrain)
@@ -126,13 +132,13 @@ def predict(train_vecs, y_train, model, nDim, partial=None):
     model.clear_sims()
     return lr.predict(allDataScaled)
     
-def getAllPosComments(result):
+def getAllPosComments(result, threshold = 1):
     Data_Scraper.load_data()
-    return [Data_Scraper.all_comments[i] for i,v in enumerate(result) if v > 0]
+    return [Data_Scraper.all_comments[i] for i,v in enumerate(result) if v == threshold ]
     
-def getAllNegComments(result):
+def getAllNegComments(result, threshold =1):
     Data_Scraper.load_data()
-    return [Data_Scraper.all_comments[i] for i,v in enumerate(result) if v < 1]
+    return [Data_Scraper.all_comments[i] for i,v in enumerate(result) if v < threshold]
     
 def trainAndPredict(partial=None, oneClassifier=False, forceReload=False):
     datas = train(oneClassifier, forceReload)
@@ -140,4 +146,29 @@ def trainAndPredict(partial=None, oneClassifier=False, forceReload=False):
     for data in datas:
         predictions.append(predict(data[0], data[1], data[2], nDim, partial))
     return predictions
+    
+def lrPredict(train_vecs, y_train, model, nDim, partial=None):
+    Data_Scraper.load_data()
+    regr = LinearRegression()
+    regr.fit(train_vecs, y_train)
+    allData = []
+    if partial == None:
+        print("running all")
+        allData = [i.content.split() for i in Data_Scraper.all_comments]
+    else:
+        allData = [i.content.split() for i in Data_Scraper.all_comments[:partial]]
+    model.train(allData)
+    model.init_sims(replace=True)
+    allDataScaled = scaleData(allData, nDim, model)
+    model.clear_sims()
+    return regr.predict(allDataScaled)
+    
+def lrTP(partial=None, oneClassifier=False, forceReload=False):
+    datas = train(oneClassifier, forceReload, False)
+    predictions = []
+    for data in datas:
+        predictions.append(lrPredict(data[0], data[1], data[2], nDim, partial))
+    return predictions
+    
+
         

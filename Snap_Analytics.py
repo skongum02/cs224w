@@ -7,7 +7,6 @@ import copy
 import pickle
 from collections import deque
 import re
-from textstat.textstat import textstat
 import random
 
 ### READ ME ###
@@ -285,8 +284,6 @@ def main():
 
 	
 	print('before mapping')
-	mapping = snap.TStrIntSH()
-	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 	
 	for i in xrange(25):
 		sample_random_comment(G, mapping)
@@ -326,6 +323,9 @@ def getDegree(G, mapping, nodeId):
 
 if __name__ == "__main__":
 	main()
+
+mapping = snap.TStrIntSH()
+G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 
 
 
