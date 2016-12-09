@@ -6,10 +6,6 @@ import math
 import copy
 import pickle
 from collections import deque
-<<<<<<< HEAD
-#from textstat.textstat import textstat
-=======
->>>>>>> 731e89a4275e2516c3e075e9c999cb5c4add0345
 import re
 import random
 
@@ -247,13 +243,8 @@ def calculate_attr_children(nid, mapping, g, attr, attr_mean, attr_std):
 
 
 def get_comment_from_nid(nid, mapping):
-<<<<<<< HEAD
-	comment_name = mapping.GetKey(int(nid))
-	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
-=======
 	comment_name = mapping.GetKey(nid)
 	comment_obj = Data_Scraper.comment_id_lookup[str(comment_name)]
->>>>>>> 731e89a4275e2516c3e075e9c999cb5c4add0345
 	return comment_obj
 
 
