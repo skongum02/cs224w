@@ -33,7 +33,7 @@ import random
 
 def get_comment_from_nid(nid, mapping):
 	comment_name = mapping.GetKey(nid)
-	comment_obj = Data_Scraper.comment_id_lookup[comment_name]
+	comment_obj = Data_Scraper.comment_id_lookup[str(comment_name)]
 	return comment_obj
 
 
@@ -285,10 +285,30 @@ def main():
 	
 	print('before mapping')
 	
-	for i in xrange(25):
-		sample_random_comment(G, mapping)
+	#for i in xrange(25):
+	#	sample_random_comment(G, mapping)
 
 	root = getRootNode(mapping, G)
+
+
+	""" TRYING TO CREATE A SMALL GRAPH SAMPLE FOR VISUALIZATION """
+	f = open("Mini_graph.csv", "w")
+	thread_id = random.sample(Data_Scraper.thread_ids, 1)
+	newRoot = G.GetNI(mapping.GetKeyId(thread_id)).GetId()
+	# newRoot = mapping.GetKeyId(thread_id)
+	f.write(str(root.GetId()) + "," + str(newRoot) + "\n")
+	sg = makeSubGraph(G, mapping)
+	for edge in sg.Edges():
+		tup = edge.GetId()
+		f.write(str(tup[0]) + "," + str(tup[1]) + "\n")
+	f.close()
+	print "File written"
+	
+	# for key,value in FK_scores.iteritems():
+	# 	f.write(str(key) + "\t" + str(value) + "\n")
+	# f.close()
+	# print "File written"
+
 
 
 	#stats_vec = comment_statistics(mapping, G)
@@ -318,6 +338,14 @@ def main():
 def getDegree(G, mapping, nodeId):
 	node = G.GetNI(mapping.GetKeyId(nodeId))
 	return node.GetOutDeg()
+
+def getNormalizedDegree(G, mapping, nodeId):
+	node = G.GetNI(mapping.GetKeyId(nodeId))
+	deg = node.GetOutDeg()
+	c_object = Data_Scraper.comment_id_lookup[nodeId]
+	threadsize = _findDepth(G.GetNI(mapping.GetKeyId(c_object.thread_id)), G)
+	return 1.0*deg/threadsize
+
 	
 # TODO: mean and standard deviation of FK - scores and word lengths
 
