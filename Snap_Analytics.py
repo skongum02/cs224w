@@ -343,8 +343,30 @@ def getNormalizedDegree(G, mapping, nodeId):
 	node = G.GetNI(mapping.GetKeyId(nodeId))
 	deg = node.GetOutDeg()
 	c_object = Data_Scraper.comment_id_lookup[nodeId]
-	threadsize = _findDepth(G.GetNI(mapping.GetKeyId(c_object.thread_id)), G)
+	threadsize = thread_sizes[c_object.thread_id]
 	return 1.0*deg/threadsize
+	
+	
+def getJson():
+	import json
+	nodes = []
+	print("looping thru nodes")
+	for i in G.Nodes():
+		node = {}
+		node["id"] = mapping.GetKey(i.GetId())
+		node["group"] = 1
+		nodes.append(node)
+	links = []
+	print("looping thru edges")
+	for i in G.Edges():
+		edge = {}
+		edge["source"] = mapping.GetKey(i.GetSrcNId())
+		edge["target"] = mapping.GetKey(i.GetDstNId())
+		edge["value"] = 1
+		links.append(edge)
+	f = open("graph.json", "w")
+	f.write(json.dumps({"nodes": nodes, "links": links}))
+	f.close()
 
 	
 # TODO: mean and standard deviation of FK - scores and word lengths
@@ -354,7 +376,11 @@ if __name__ == "__main__":
 
 mapping = snap.TStrIntSH()
 G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
-
+root = getRootNode(mapping, G)
+thread_sizes = {}
+for thread in root.GetOutEdges():
+        threadsize = _findDepth(G.GetNI(thread), G)
+        thread_sizes[mapping.GetKey(thread)] = threadsize
 
 
 
