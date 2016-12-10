@@ -106,6 +106,21 @@ def get_percentage(arr):
 	numneg = arr[0]
 	return 1.0*numpos/(numpos+numneg)
 
+
+def get_pickle_dict(filename):
+	# READ FROM PICKLE FILE
+    f = open(filename, "rb")
+    temp_dict = pickle.load(f)
+    f.close()
+    return temp_dict
+
+def get_pickle_tuple_of_3(filename):
+	# READ FROM PICKLE FILE
+    f = open(filename, "rb")
+    temp_tuple = pickle.load(f)
+    f.close()
+    return temp_tuple
+
 def sequence_corr_dict(sequences):
 	corr_dict = {}
 	corr_dict['0'] = [0,0]
@@ -148,14 +163,37 @@ def sequence_corr_dict(sequences):
 	ggp_avg = 1.0*(ggp1+ggp2+ggp3+ggp4)/4
 
 	gp1 = get_percentage(corr_dict['01']) - get_percentage(corr_dict['00'])
-	gp2 = get_percentage(corr_dict['11']) - get_percentage(corr_dict['11'])
+	gp2 = get_percentage(corr_dict['11']) - get_percentage(corr_dict['10'])
 	gp_avg = 1.0*(gp1+gp2)/2
 
 	p_avg = get_percentage(corr_dict['1']) - get_percentage(corr_dict['0'])
 
-	print "Influence of great-grandparents: " + str(ggp_avg)
-	print "Influence of grandparents: " + str(gp_avg)
-	print "Influence of parents: " + str(p_avg)
+	ggp_percent_growth = 100.0* (((1.0*get_percentage(corr_dict['001'])) \
+		+ (get_percentage(corr_dict['011']))	\
+		+ (get_percentage(corr_dict['101']))	\
+		+ (get_percentage(corr_dict['111'])))/	\
+		((get_percentage(corr_dict['000'])) \
+		+ (get_percentage(corr_dict['010']))	\
+		+ (get_percentage(corr_dict['100']))	\
+		+ (get_percentage(corr_dict['110']))) - 1)
+
+
+	gp_percent_growth = 100.0*((1.0*get_percentage(corr_dict['01'])\
+		+ (get_percentage(corr_dict['11'])))/	\
+		((get_percentage(corr_dict['00']))	\
+		+ (get_percentage(corr_dict['01'])))	\
+		- 1)
+
+	p_percent_growth = 100.0*((1.0*get_percentage(corr_dict['1']) / get_percentage(corr_dict['0'])) - 1)
+
+	print "Difference of fraction of positives for having positive great-grandparents: " + str(ggp_avg)
+	print "Percent growth in positives for having positive great-grandparents: " + str(ggp_percent_growth)
+	print # blank line
+	print "Difference of fraction of positives for having positive grandparents: " + str(gp_avg)
+	print "Percent growth in positives for having positive grandparents: " + str(gp_percent_growth)
+	print # blank line	
+	print "Difference of fraction of positives for having positive parents: " + str(p_avg)
+	print "Percent growth in positives for having positive parents: " + str(p_percent_growth)
 	return
 
 
@@ -172,31 +210,49 @@ def sequence_corr_dict(sequences):
 def assemble_sequence_dict(mapping):
 	sequences = []
 	has_attr = {}
-	# print(len(Data_Scraper.root_comments))
-	for comment in Data_Scraper.all_comments:
 
-		"""# This is the part where we put in different metrics #"""
-		if(get_length(comment) > 120):
-			has_attr[comment.comment_id] = True
-		else:
-			has_attr[comment.comment_id] = False
+	print "Opening pickle file"
 
-	if('cedt5zw' in has_attr.keys()):
-		# print('ceefsvz is in')
-	else:
-		# print('ceefsvz is out')
-	for comment in Data_Scraper.all_comments:
-		#print('before calc_attr')
-		#print comment
-		attr_tup = calculate_attr(comment, has_attr, mapping)
-		if(len(attr_tup[1]) != 0):
+	tuple3 = get_pickle_tuple_of_3("z_md_ts_uv_classified.pkl")
+	names = ["MAX DEPTH", "TREE SIZE", "UPVOTES"]
+	for i in xrange(len(tuple3)):
+		print "Now working on " + names[i]
+		scores = tuple3[i]
+		print "Sanity check: Size of classified comments: " + str(len(scores))
+		print "Sanity check: Size of all_comments: " + str(len(Data_Scraper.all_comments))
+		print "Iterating over pickle file, assigning building vectors"
 
-			# print(attr_tup)
-			#print comment.comment_id
-			sequences.append(attr_tup)
+		# scores = {}
+		# for comment in Data_Scraper.all_comments:
+		# 	comment_id = comment.comment_id
+		# 	wordcount = get_length(comment)
+		# 	scores[comment_id] = wordcount
 
-	sequence_corr_dict(sequences)
-	
+		for comment_id, score in scores.iteritems():
+
+			"""# This is the part where we put in different metrics #"""
+			if(score == 1):
+				has_attr[comment_id] = True
+			else:
+				has_attr[comment_id] = False
+
+		# if('cedt5zw' in has_attr.keys()):
+		# 	# print('ceefsvz is in')
+		# else:
+		# 	# print('ceefsvz is out')
+		for comment_id, score in scores.iteritems():
+			#print('before calc_attr')
+			#print comment
+			comment = Data_Scraper.comment_id_lookup[comment_id]
+			attr_tup = calculate_attr(comment, has_attr, mapping)
+			if(len(attr_tup[1]) != 0):
+
+				# print(attr_tup)
+				#print comment.comment_id
+				sequences.append(attr_tup)
+
+		sequence_corr_dict(sequences)
+		print "The above scores were for " + names[i]
 
 def get_length(comment):
 	content = comment.content
@@ -640,7 +696,7 @@ G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 root = getRootNode(mapping, G)
 thread_sizes = {}
 for thread in root.GetOutEdges():
-		threadsize = _findDepth(g.GetNI(thread), G)
+		threadsize = _findDepth(G.GetNI(thread), G)
 		thread_sizes[mapping.GetKey(thread)] = threadsize
 
 
