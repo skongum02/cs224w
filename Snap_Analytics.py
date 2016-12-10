@@ -100,6 +100,12 @@ def sequence_corr(sequences):
 		print 'neg corr ' + str( float(j[0])/(j[0]+j[2]))
 		print 'pos corr ' + str(float(j[1])/(j[1]+j[3]))
 
+
+def get_percentage(arr):
+	numpos = arr[1]
+	numneg = arr[0]
+	return 1.0*numpos/(numpos+numneg)
+
 def sequence_corr_dict(sequences):
 	corr_dict = {}
 	corr_dict['0'] = [0,0]
@@ -132,7 +138,28 @@ def sequence_corr_dict(sequences):
 			corr_dict[anc_str][0] = corr_dict[anc_str][0]+1
 
 	print('next phase')
-	print corr_dict
+	# print corr_dict
+
+	# COMPARE THINGS CORRECTLY USING THE GET_PERCENTAGE FUNCTION #
+	ggp1 = get_percentage(corr_dict['001']) - get_percentage(corr_dict['000'])
+	ggp2 = get_percentage(corr_dict['011']) - get_percentage(corr_dict['010'])
+	ggp3 = get_percentage(corr_dict['101']) - get_percentage(corr_dict['100'])
+	ggp4 = get_percentage(corr_dict['111']) - get_percentage(corr_dict['110'])
+	ggp_avg = 1.0*(ggp1+ggp2+ggp3+ggp4)/4
+
+	gp1 = get_percentage(corr_dict['01']) - get_percentage(corr_dict['00'])
+	gp2 = get_percentage(corr_dict['11']) - get_percentage(corr_dict['11'])
+	gp_avg = 1.0*(gp1+gp2)/2
+
+	p_avg = get_percentage(corr_dict['1']) - get_percentage(corr_dict['0'])
+
+	print "Influence of great-grandparents: " + str(ggp_avg)
+	print "Influence of grandparents: " + str(gp_avg)
+	print "Influence of parents: " + str(p_avg)
+	return
+
+
+
 	for config in corr_dict.keys():
 		print(' ')
 		print(config)
@@ -145,24 +172,26 @@ def sequence_corr_dict(sequences):
 def assemble_sequence_dict(mapping):
 	sequences = []
 	has_attr = {}
-	print(len(Data_Scraper.root_comments))
+	# print(len(Data_Scraper.root_comments))
 	for comment in Data_Scraper.all_comments:
+
+		"""# This is the part where we put in different metrics #"""
 		if(get_length(comment) > 120):
 			has_attr[comment.comment_id] = True
 		else:
 			has_attr[comment.comment_id] = False
 
 	if('cedt5zw' in has_attr.keys()):
-		print('ceefsvz is in')
+		# print('ceefsvz is in')
 	else:
-		print('ceefsvz is out')
+		# print('ceefsvz is out')
 	for comment in Data_Scraper.all_comments:
 		#print('before calc_attr')
 		#print comment
 		attr_tup = calculate_attr(comment, has_attr, mapping)
 		if(len(attr_tup[1]) != 0):
 
-			print(attr_tup)
+			# print(attr_tup)
 			#print comment.comment_id
 			sequences.append(attr_tup)
 
@@ -528,11 +557,14 @@ def main():
 	#for i in xrange(25):
 	#	sample_random_comment(G, mapping)
 
+	mapping = snap.TStrIntSH()
+	G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
+
 	root = getRootNode(mapping, G)
 
 	# FK_histogram()
 
-	FK_scores = getFKScores()
+	# FK_scores = getFKScores()
 
 	# """ TRYING TO CREATE A SMALL GRAPH SAMPLE FOR VISUALIZATION """
 	# f = open("Mini_graph.csv", "w")
@@ -608,7 +640,7 @@ G = snap.LoadEdgeListStr(snap.PNGraph, "politics_edge_list.txt", 0, 1, mapping)
 root = getRootNode(mapping, G)
 thread_sizes = {}
 for thread in root.GetOutEdges():
-		threadsize = _findDepth(g.GetNI(thread), g)
+		threadsize = _findDepth(g.GetNI(thread), G)
 		thread_sizes[mapping.GetKey(thread)] = threadsize
 
 
